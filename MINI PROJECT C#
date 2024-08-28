@@ -1,0 +1,388 @@
+
+PROJECT 1
+
+
+
+namespace Project_1
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("Select operation: 1.Add 2.Subtract 3.Multiply 4.Divide 5.Random 6.Sqrt 7.Power 8.Log 9.Anti-Log 10.Exit");
+                int choice = int.Parse(Console.ReadLine());
+                if (choice == 10) break;
+
+                double num1 = 0, num2 = 0;
+                if (choice >= 1 && choice <= 4 || choice == 7)
+                {
+                    Console.Write("Enter first number: ");
+                    num1 = double.Parse(Console.ReadLine());
+                    Console.Write("Enter second number: ");
+                    num2 = double.Parse(Console.ReadLine());
+                }
+                else if (choice == 6 || choice == 8 || choice == 9)
+                {
+                    Console.Write("Enter the number: ");
+                    num1 = double.Parse(Console.ReadLine());
+                }
+
+                switch (choice)
+                {
+                    case 1: Console.WriteLine($"Result: {num1 + num2}"); break;
+                    case 2: Console.WriteLine($"Result: {num1 - num2}"); break;
+                    case 3: Console.WriteLine($"Result: {num1 * num2}"); break;
+                    case 4: Console.WriteLine(num2 != 0 ? $"Result: {num1 / num2}" : "Error: Division by zero"); break;
+                    case 5: Console.WriteLine($"Random Number: {new Random().Next()}"); break;
+                    case 6: Console.WriteLine($"Square Root: {Math.Sqrt(num1)}"); break;
+                    case 7: Console.WriteLine($"Power: {Math.Pow(num1, num2)}"); break;
+                    case 8: Console.WriteLine($"Logarithm: {Math.Log(num1)}"); break;
+                    case 9: Console.WriteLine($"Anti-Logarithm: {Math.Exp(num1)}"); break;
+                    default: Console.WriteLine("Invalid choice"); break;
+                }
+            }
+        }
+    }
+}
+
+
+
+PROJECT 2
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MiniProject2
+{
+    internal class Program
+    {
+        class Expenses
+        {
+            public float Amount { get; set; }
+            public string Description { get; set; }
+            public string Category { get; set; }
+            public DateTime Date { get; set; }
+        }
+
+        static void Main(string[] args)
+        {
+            var expenses = new List<Expenses>();
+            var budgetLimits = new Dictionary<string, float>();
+            string addMore = "yes";
+
+            while (addMore == "yes")
+            {
+                // Collect expense details from the user and Check if the budget limit is exceeded
+                var expense = CollectExpenseDetails(budgetLimits);
+                expenses.Add(expense);
+
+                CheckBudgetLimit(expenses, budgetLimits, expense);
+                addMore = GetStringInput("Add another expense? (yes/no)").ToLower();
+            }
+
+            // Display all expenses and budget summary
+            DisplayExpenses(expenses);
+            DisplayBudgetSummary(expenses, budgetLimits);
+
+            // Filter expenses based on user input
+            var startDate = GetDateInput("Enter start date for filtering (yyyy-mm-dd):");
+            var endDate = GetDateInput("Enter end date for filtering (yyyy-mm-dd):");
+            var filteredExpenses = FilterExpensesByDate(expenses, startDate, endDate);
+            DisplayExpenses(filteredExpenses);
+
+            Console.WriteLine("\nThank you for using the application. Press any key to exit.");
+            Console.ReadKey();
+        }
+
+        // Method to collect expense details from the user
+        static Expenses CollectExpenseDetails(Dictionary<string, float> budgetLimits)
+        {
+            float amount = GetFloatInput("Enter Amount:");
+            string description = GetStringInput("Enter Description:");
+            string category = GetStringInput("Enter Category:");
+
+            // Set budget limit for new categories
+            if (!budgetLimits.ContainsKey(category))
+            {
+                float budgetLimit = GetFloatInput($"Enter Budget Limit for {category}:");
+                budgetLimits[category] = budgetLimit;
+            }
+
+            DateTime date = GetDateInput("Enter Date (yyyy-mm-dd):");
+
+            return new Expenses { Amount = amount, Description = description, Category = category, Date = date };
+        }
+
+        // Method to check if the budget limit is exceeded
+        static void CheckBudgetLimit(List<Expenses> expenses, Dictionary<string, float> budgetLimits, Expenses expense)
+        {
+            float currentTotal = expenses.Where(e => e.Category == expense.Category && e.Date.Month == expense.Date.Month && e.Date.Year == expense.Date.Year).Sum(e => e.Amount);
+            if (currentTotal > budgetLimits[expense.Category])
+            {
+                Console.WriteLine($"Warning: Budget exceeded for {expense.Category} this month!");
+            }
+        }
+
+        // Method to get float input from the user and string input from the user
+        static float GetFloatInput(string prompt)
+        {
+            Console.WriteLine(prompt);
+            return float.Parse(Console.ReadLine());
+        }
+
+        static string GetStringInput(string prompt)
+        {
+            Console.WriteLine(prompt);
+            return Console.ReadLine();
+        }
+
+        // Method to get date input from the user
+        static DateTime GetDateInput(string prompt)
+        {
+            Console.WriteLine(prompt);
+            return DateTime.Parse(Console.ReadLine());
+        }
+
+        // Method to display all expenses
+        static void DisplayExpenses(List<Expenses> expenses)
+        {
+            Console.WriteLine("\nExpenses:");
+            foreach (var expense in expenses)
+            {
+                Console.WriteLine($"Amount: {expense.Amount}, Description: {expense.Description}, Category: {expense.Category}, Date: {expense.Date.ToShortDateString()}");
+            }
+        }
+
+        // Method to display budget summary
+        static void DisplayBudgetSummary(List<Expenses> expenses, Dictionary<string, float> budgetLimits)
+        {
+            Console.WriteLine("\nBudget Summary:");
+            foreach (var category in budgetLimits.Keys)
+            {
+                float totalSpent = expenses.Where(e => e.Category == category).Sum(e => e.Amount);
+                float remainingBudget = budgetLimits[category] - totalSpent;
+                Console.WriteLine($"{category}: Spent {totalSpent}, Remaining Budget: {remainingBudget}");
+            }
+        }
+
+        // Method to filter expenses by date,category and description
+        static List<Expenses> FilterExpensesByDate(List<Expenses> expenses, DateTime startDate, DateTime endDate)
+        {
+            return expenses.Where(e => e.Date >= startDate && e.Date <= endDate).ToList();
+        }
+
+        static List<Expenses> FilterExpensesByCategory(List<Expenses> expenses, string category)
+        {
+            return expenses.Where(e => e.Category == category).ToList();
+        }
+
+        static List<Expenses> FilterExpensesByDescription(List<Expenses> expenses, string description)
+        {
+            return expenses.Where(e => e.Description.Contains(description)).ToList();
+        }
+    }
+}
+
+
+PROJECT 3
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+namespace MiniProject3
+{ 
+public class Contact
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public ArrayList PhoneNumbers { get; set; }
+
+    public Contact(string name, string email, ArrayList phoneNumbers)
+    {
+        Name = name;
+        Email = email;
+        PhoneNumbers = phoneNumbers;
+    }
+
+    public override string ToString() => $"Name: {Name}, Email: {Email}, Phone Numbers: {string.Join(", ", PhoneNumbers.ToArray())}";
+}
+
+public class AddressBook
+{
+    private Hashtable contacts = new Hashtable();
+
+    public void AddContact(Contact contact)
+    {
+        if (!contacts.ContainsKey(contact.Name))
+            contacts[contact.Name] = new ArrayList();
+        ((ArrayList)contacts[contact.Name]).Add(contact);
+    }
+
+    public void SearchContact(string searchTerm)
+    {
+        bool found = false;
+        foreach (DictionaryEntry entry in contacts)
+        {
+            foreach (Contact contact in (ArrayList)entry.Value)
+            {
+                if (contact.Name.Equals(searchTerm, StringComparison.OrdinalIgnoreCase) || contact.Email.Equals(searchTerm, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine(contact);
+                    found = true;
+                }
+            }
+        }
+        if (!found) Console.WriteLine("Contact not found.");
+    }
+
+    public void EditContact(string name, string newEmail, ArrayList newPhoneNumbers)
+    {
+        if (contacts.ContainsKey(name))
+            foreach (Contact contact in (ArrayList)contacts[name])
+            {
+                contact.Email = newEmail;
+                contact.PhoneNumbers = newPhoneNumbers;
+            }
+        else
+            Console.WriteLine("Contact not found.");
+    }
+
+    public void DeleteContact(string name)
+    {
+        if (contacts.ContainsKey(name))
+            contacts.Remove(name);
+        else
+            Console.WriteLine("Contact not found.");
+    }
+
+    public void MergeContacts(string name)
+    {
+        if (contacts.ContainsKey(name))
+        {
+            ArrayList mergedContacts = new ArrayList();
+            foreach (Contact contact in (ArrayList)contacts[name])
+                mergedContacts.AddRange(contact.PhoneNumbers);
+            contacts[name] = new ArrayList { new Contact(name, ((Contact)((ArrayList)contacts[name])[0]).Email, mergedContacts) };
+        }
+        else
+            Console.WriteLine("Contact not found.");
+    }
+
+    public void ExportContacts(string filePath)
+    {
+        using (StreamWriter writer = new StreamWriter(filePath))
+            foreach (DictionaryEntry entry in contacts)
+                foreach (Contact contact in (ArrayList)entry.Value)
+                    writer.WriteLine($"{contact.Name},{contact.Email},{string.Join(";", contact.PhoneNumbers.ToArray())}");
+        Console.WriteLine("Contacts exported successfully.");
+    }
+
+    public void ImportContacts(string filePath)
+    {
+        using (StreamReader reader = new StreamReader(filePath))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                string[] parts = line.Split(',');
+                string name = parts[0];
+                string email = parts[1];
+                ArrayList phoneNumbers = new ArrayList(parts[2].Split(';'));
+                AddContact(new Contact(name, email, phoneNumbers));
+            }
+        }
+        Console.WriteLine("Contacts imported successfully.");
+    }
+
+    public void SortContacts()
+    {
+        var sortedContacts = contacts.Cast<DictionaryEntry>()
+                                     .OrderBy(entry => entry.Key)
+                                     .ToDictionary(entry => entry.Key, entry => entry.Value);
+        contacts = new Hashtable(sortedContacts);
+        Console.WriteLine("Contacts sorted alphabetically.");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        AddressBook addressBook = new AddressBook();
+        while (true)
+        {
+            Console.WriteLine("\nAddress Book Menu:\n1. Add Contact\n2. Search Contact\n3. Edit Contact\n4. Delete Contact\n5. Merge Contacts\n6. Export Contacts\n7. Import Contacts\n8. Sort Contacts\n9. Exit");
+            Console.Write("Choose an option: ");
+            if (!int.TryParse(Console.ReadLine(), out int choice))
+            {
+                Console.WriteLine("Invalid input. Please enter a number.");
+                continue;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    Console.Write("Enter name: ");
+                    string name = Console.ReadLine();
+                    Console.Write("Enter email: ");
+                    string email = Console.ReadLine();
+                    Console.Write("Enter phone numbers (comma separated): ");
+                    ArrayList phoneNumbers = new ArrayList(Console.ReadLine().Split(','));
+                    addressBook.AddContact(new Contact(name, email, phoneNumbers));
+                    Console.WriteLine("Contact added successfully.");
+                    break;
+                case 2:
+                    Console.Write("Enter name or email to search: ");
+                    addressBook.SearchContact(Console.ReadLine());
+                    break;
+                case 3:
+                    Console.Write("Enter name to edit: ");
+                    name = Console.ReadLine();
+                    Console.Write("Enter new email: ");
+                    email = Console.ReadLine();
+                    Console.Write("Enter new phone numbers (comma separated): ");
+                    phoneNumbers = new ArrayList(Console.ReadLine().Split(','));
+                    addressBook.EditContact(name, email, phoneNumbers);
+                    Console.WriteLine("Contact edited successfully.");
+                    break;
+                case 4:
+                    Console.Write("Enter name to delete: ");
+                    addressBook.DeleteContact(Console.ReadLine());
+                    Console.WriteLine("Contact deleted successfully.");
+                    break;
+                case 5:
+                    Console.Write("Enter name to merge contacts: ");
+                    addressBook.MergeContacts(Console.ReadLine());
+                    Console.WriteLine("Contacts merged successfully.");
+                    break;
+                case 6:
+                    Console.Write("Enter file path to export contacts: ");
+                    addressBook.ExportContacts(Console.ReadLine());
+                    break;
+                case 7:
+                    Console.Write("Enter file path to import contacts: ");
+                    addressBook.ImportContacts(Console.ReadLine());
+                    break;
+                case 8:
+                    addressBook.SortContacts();
+                    break;
+                case 9:
+                    Console.WriteLine("Exiting the application.");
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    break;
+            }
+        }
+    }
+}
+}
